@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 4) {
         printf("Usage: %s <filename_1> <filename_2> <operation>\n", argv[0]);
-        printf("operation: add, sub, mul"); //TODO: add more operations
+        printf("operation: add, sub, mul\n"); //TODO: add more operations
         return 1;
     }
 
