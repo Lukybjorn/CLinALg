@@ -3,14 +3,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#define Error(fmt, ...) do { \
-    fprintf(stderr, "[%d:%s()] ", __LINE__, __func__); \
+// Print the error messege in the <fmt> specified and exit the program with EXIT_FALIURE
+#define raiseError(fmt, ...) do { \
+    fprintf(stderr, "ERROR[%d:%s()] ", __LINE__, __func__); \
     fprintf(stderr, fmt, ##__VA_ARGS__); \
     fprintf(stderr, "\n"); \
     exit(EXIT_FAILURE); \
 } while (false)
 
+// Print a warning messege in the <fmt> specified and continues the program
+#define raiseWarning(fmt, ...) do { \
+    fprintf(stderr, "WARNING[%d:%s()] ", __LINE__, __func__); \
+    fprintf(stderr, fmt, ##__VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+} while (false)
+
+// Define a struct Matrix for complex valued matrices
 typedef struct Matrix {
     complex double *data;
     int rows;
@@ -99,7 +107,7 @@ Matrix read_matrix(const char *filename, char sep)
     FILE *file = fopen(filename, "r");
 
     if (file == NULL) {
-        Error("Error opening file '%s'", filename);
+        raiseError("raiseError opening file '%s'", filename);
         return matrix;
     }
 
@@ -162,7 +170,7 @@ Matrix read_matrix(const char *filename, char sep)
 
             if (counter != n_cols) {
 
-                Error(
+                raiseError(
                     "Inconsistent number of columns "
                     "in row %d: expected %d, found %d",
                     matrix.rows,
@@ -194,7 +202,7 @@ Matrix read_matrix(const char *filename, char sep)
 
         fclose(file);
 
-        Error("Empty matrix");
+        raiseError("Empty matrix");
 
         return matrix;
     }
@@ -215,7 +223,7 @@ Matrix read_matrix(const char *filename, char sep)
 
     if (matrix.data == NULL) {
 
-        Error("Memory allocation failed");
+        raiseError("Memory allocation failed");
 
         fclose(file);
 
@@ -264,7 +272,7 @@ Matrix read_matrix(const char *filename, char sep)
              */
             if (endptr == ptr) {
 
-                Error(
+                raiseError(
                     "Invalid number at row %d, column %d",
                     row + 1,
                     col + 1
@@ -304,7 +312,7 @@ Matrix read_matrix(const char *filename, char sep)
                  */
                 if (*endptr != sep) {
 
-                    Error(
+                    raiseError(
                         "Expected separator at row %d, "
                         "column %d",
                         row + 1,
@@ -355,7 +363,7 @@ void show(Matrix *mat){
 
 int add_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out){
     if (mat_1->rows != mat_2->rows || mat_1->cols != mat_2->cols){
-        Error("Incorrect shapes for %s operation", "subtraction");
+        raiseError("Incorrect shapes for %s operation", "subtraction");
         return 1;
     }
     int length = mat_1->rows * mat_1->cols;
@@ -367,7 +375,7 @@ int add_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out){
 
 int sub_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out){
     if (mat_1->rows != mat_2->rows || mat_1->cols != mat_2->cols){
-        Error("Incorrect shapes for %s operation", "addition");
+        raiseError("Incorrect shapes for %s operation", "addition");
         return 1;
     }
     int length = mat_1->rows * mat_1->cols;
@@ -380,7 +388,7 @@ int sub_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out){
 int mul_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out)
 {
     if (mat_1->cols != mat_2->rows) {
-        Error("Incorrect shapes for %s operation", "multiplication");
+        raiseError("Incorrect shapes for %s operation", "multiplication");
         return 1;
     }
 
@@ -413,7 +421,7 @@ int main(int argc, char *argv[])
     Matrix mat_2 = read_matrix(argv[2], ',');
 
     if (mat_1.data == NULL || mat_2.data == NULL) {
-        Error("Invalid matrices supplied");
+        raiseError("Invalid matrices supplied");
         return 1;
     }
 
