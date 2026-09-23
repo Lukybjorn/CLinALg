@@ -250,6 +250,8 @@ Matrix read_matrix(const char *filename, char sep) {
  * Print a matrix with complex values 
  */
 void show(Matrix *mat) {
+    printf("PRINT (%ld X %ld) MATRIX\n", mat->rows, mat->cols);
+    printf("{\n");
     for (int i = 0; i < mat->rows; i++) {
         for (int j = 0; j < mat->cols; j++) {
             complex double z = mat->data[i * mat->cols + j];
@@ -258,7 +260,7 @@ void show(Matrix *mat) {
         }
         printf("\n");
     }
-    printf("\n");
+    printf("}\n");
 }
 
 /*
@@ -311,6 +313,28 @@ void mul_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
     }
 }
 
+/*
+ * Multiply matrix <mat> by scalar <a>
+ */
+void mul_matrix_scalar(Matrix *mat, complex double a) {
+    size_t length = mat->rows * mat->cols;
+
+    for (int i = 0; i < length; i++) {
+        mat->data[i] *= a;
+    }
+}
+
+/*
+ * Divide matrix <mat> by scalar <a>
+ * <a> must be different then 0.
+ */
+void div_matrix_scalar(Matrix *mat, complex double a) {
+    if (a == 0.0) {
+        raiseError("Divide by 0 error");
+    }
+    mul_matrix_scalar(mat, 1 / a);
+}
+
 int main(int argc, char *argv[]) {
     const char *operations = "add, sub, mul";
 
@@ -361,6 +385,9 @@ int main(int argc, char *argv[]) {
     } else {
         raiseError("Valid operations: %s", operations);
     }
+
+    div_matrix_scalar(&mat_out, 0);
+    show(&mat_out);
 
     free(mat_1.data);
     free(mat_2.data);
