@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Print the error messege in the <fmt> specified and exit the program with EXIT_FALIURE
 #define raiseError(fmt, ...) do { \
@@ -25,6 +26,23 @@ typedef struct Matrix {
     size_t cols;
 } Matrix;
 
+/*
+ * Initilize a matrix element in size (rows, cols) filled with <fill>
+ */
+Matrix init_matrix(size_t rows, size_t cols, complex double fill) {
+    Matrix mat = {NULL, rows, cols};
+    mat.data = calloc(rows * cols, sizeof(fill));
+    if (mat.data == NULL) {
+        raiseError("Memory allocation failed");
+    }
+    if (fill != 0.0) {
+        size_t length = rows * cols;
+        for (int i = 0; i < length; i++) {
+            mat.data[i] = fill;
+        }
+    } 
+    return mat;
+}
 
 /*
  * Convert a string to a complex double.
@@ -188,7 +206,7 @@ Matrix read_matrix(const char *filename, char sep) {
 
             // Read complex number and store in the matrix.data variable row wise
             matrix.data[row * matrix.cols + col] = strtocd(ptr, &endptr);
-            printf("%f%+f\n", creal(matrix.data[row * matrix.cols + col]), cimag(matrix.data[row * matrix.cols + col]));
+        //    printf("%f%+f\n", creal(matrix.data[row * matrix.cols + col]), cimag(matrix.data[row * matrix.cols + col]));
 
             // Check that something was converted succsesfuly to complex double
             if (endptr == ptr) {
@@ -293,12 +311,11 @@ void mul_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+    const char *operations = "add, sub, mul";
+
     if (argc < 4) {
-        printf("Usage: %s <filename_1> <filename_2> <operation>\n", argv[0]);
-        printf("operation: add, sub, mul\n"); //TODO: add more operations
-        return 1;
+        raiseError("Usage: %s <filename_1> <filename_2> <operation>\nValid operations: %s\n", argv[0], operations);
     }
 
     Matrix mat_1 = read_matrix(argv[1], ',');
@@ -313,26 +330,41 @@ int main(int argc, char *argv[])
     show(&mat_2);
 
     Matrix mat_out;
-    mat_out.rows = mat_1.rows;
-    mat_out.cols = mat_1.cols;
-    mat_out.data = malloc(sizeof(complex double) * mat_out.rows * mat_out.cols); // allocate memory for the output matrix
 
-    printf("Addition\n");
-    add_matrix(&mat_1, &mat_2, &mat_out);
-    show(&mat_out);
+    if (strcmp(argv[3], "add") == 0) {
 
-    printf("Subtruction\n");
-    sub_matrix(&mat_1, &mat_2, &mat_out);
-    show(&mat_out);
+        printf("Addition\n");
 
-    printf("Multipication\n");
-    mul_matrix(&mat_1, &mat_2, &mat_out);
-    show(&mat_out);
+        mat_out = init_matrix(mat_1.rows, mat_1.cols, 0);
+
+        add_matrix(&mat_1, &mat_2, &mat_out);
+        show(&mat_out);
+
+    } else if (strcmp(argv[3], "sub") == 0) {
+
+        printf("Subtraction\n");
+
+        mat_out = init_matrix(mat_1.rows, mat_1.cols, 0);
+
+        sub_matrix(&mat_1, &mat_2, &mat_out);
+        show(&mat_out);
+
+    } else if (strcmp(argv[3], "mul") == 0) {
+
+        printf("Multiplication\n");
+
+        mat_out = init_matrix(mat_1.rows, mat_2.cols, 0);
+
+        mul_matrix(&mat_1, &mat_2, &mat_out);
+        show(&mat_out);
+
+    } else {
+        raiseError("Valid operations: %s", operations);
+    }
 
     free(mat_1.data);
     free(mat_2.data);
     free(mat_out.data);
-
 
     return 0;
 }
