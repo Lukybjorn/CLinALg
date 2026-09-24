@@ -351,6 +351,20 @@ void tensor_prod(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
     }
 }
 
+complex double trace(Matrix *mat) {
+    size_t rows = mat->rows;
+    size_t cols = mat->cols;
+
+    if (rows != cols) {
+        raiseError("Incorrect shapes for operation trace (rows != cols)");
+    }
+    complex double z = 0;
+    for (int i = 0; i < rows; i++) {
+        z += mat->data[rows*i + i];
+    }
+    return z;
+}
+
 /*
  * Multiply matrix <mat> by scalar <a>
  */
@@ -434,6 +448,9 @@ int main(int argc, char *argv[]) {
 
 //    div_matrix_scalar(&mat_out, 0);
 //    show(&mat_out);
+
+    complex double z = trace(&mat_1);
+    printf("Trace[mat_1] = %8.3f%+8.3fi\n", creal(z), cimag(z));
 
     free(mat_1.data);
     free(mat_2.data);
