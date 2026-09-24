@@ -246,9 +246,32 @@ Matrix read_matrix(const char *filename, char sep) {
 }
 
 /*
+ * Write matrix to <filename> with <sep> separator between the columns
+ */
+void write_matrix(const Matrix *mat, const char *filename, char sep) {
+    FILE *file = fopen(filename, "w");
+
+    if (file == NULL) {
+        raiseError("raiseError opening file '%s'", filename);
+    }
+    size_t rows = mat->rows;
+    size_t cols = mat->cols;
+    complex double z;
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            z = mat->data[rows * i + j];
+            fprintf(file, "%8.3f%+8.3fi%c",creal(z), cimag(z), sep);
+        }
+        fprintf(file, "\n");
+    }                               
+    fclose(file);
+}
+
+
+/*
  * Print a matrix with complex values 
  */
-void show(Matrix *mat) {
+void show(const Matrix *mat) {
     printf("PRINT (%ld X %ld) MATRIX\n", mat->rows, mat->cols);
     printf("{\n");
     for (int i = 0; i < mat->rows; i++) {
@@ -265,9 +288,9 @@ void show(Matrix *mat) {
 /*
  * Add two matrices with complex values. Must be the same dimentions
  */
-void add_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
+void add_matrix(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
     // If the dimentions does not match
-    if (mat_1->rows != mat_2->rows || mat_1->cols != mat_2->cols) raiseError("Incorrect shapes for %s operation", "addition");
+    if (mat_1->rows != mat_2->rows || mat_1->cols != mat_2->cols) raiseError("Incorrect shapes for addition operation");
 
     int length = mat_1->rows * mat_1->cols;
     for (int i = 0; i < length ; i++) {
@@ -278,9 +301,9 @@ void add_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
 /*
  * Subtract two matrices with complex values. Must be the same dimentions
  */
-void sub_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
+void sub_matrix(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
     // If the dimentions does not match
-    if (mat_1->rows != mat_2->rows || mat_1->cols != mat_2->cols) raiseError("Incorrect shapes for %s operation", "addition");
+    if (mat_1->rows != mat_2->rows || mat_1->cols != mat_2->cols) raiseError("Incorrect shapes for subtraction operation");
 
     int length = mat_1->rows * mat_1->cols;
     for (int i = 0; i < length ; i++) {
@@ -292,9 +315,9 @@ void sub_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
  * Multiply two matrices with complex values.
  * mat_1.cols must equal mat_2.rows (mXn * nXk) -> (mXk)
  */
-void mul_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
+void mul_matrix(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
     // If the dimentions does not match
-    if (mat_1->cols != mat_2->rows) raiseError("Incorrect shapes for %s operation", "multiplication");
+    if (mat_1->cols != mat_2->rows) raiseError("Incorrect shapes for matrix multipication operation");
 
     size_t rows = mat_1->rows;
     size_t cols = mat_2->cols;
@@ -319,7 +342,7 @@ void mul_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
  *
  * (mat_1.rows * mat_2.rows) x (mat_1.cols * mat_2.cols)
  */
-void tensor_prod(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
+void tensor_prod(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
     size_t rows = mat_out->rows;
     size_t cols = mat_out->cols;
 
@@ -330,7 +353,7 @@ void tensor_prod(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
     size_t cols_2 = mat_2->cols;
 
     if (rows != rows_1 * rows_2 || cols != cols_1 * cols_2) {
-        raiseError("Incorrect shapes for operation tensor product");
+        raiseError("Incorrect shapes for tensor product operation");
     }
 
     for (size_t i = 0; i < rows_1; i++) {
@@ -351,7 +374,7 @@ void tensor_prod(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
     }
 }
 
-complex double trace(Matrix *mat) {
+complex double trace(const Matrix *mat) {
     size_t rows = mat->rows;
     size_t cols = mat->cols;
 
@@ -384,7 +407,7 @@ void div_matrix_scalar(Matrix *mat, complex double a) {
     if (a == 0.0) {
         raiseError("Divide by 0 error");
     }
-    mul_matrix_scalar(mat, 1 / a);
+    mul_matrix_scalar(mat, 1.0 / a);
 }
 
 int main(int argc, char *argv[]) {
@@ -449,8 +472,11 @@ int main(int argc, char *argv[]) {
 //    div_matrix_scalar(&mat_out, 0);
 //    show(&mat_out);
 
-    complex double z = trace(&mat_1);
-    printf("Trace[mat_1] = %8.3f%+8.3fi\n", creal(z), cimag(z));
+    if (mat_out.rows == mat_out.cols) {
+        complex double z = trace(&mat_1);
+        printf("Trace[mat_1] = %8.3f%+8.3fi\n", creal(z), cimag(z));
+    }
+    write_matrix(&mat_out, "MATRICES/TEST_WRITE", ',');
 
     free(mat_1.data);
     free(mat_2.data);
