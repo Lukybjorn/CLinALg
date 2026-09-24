@@ -172,7 +172,6 @@ Matrix read_matrix(const char *filename, char sep) {
     line = NULL;
     len = 0;
 
-
     
     // Check for an empty file.
     if (matrix.rows == 0 || matrix.cols == 0) {
@@ -314,6 +313,45 @@ void mul_matrix(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
 }
 
 /*
+ * Tensor product between two matrices.
+ *
+ * mat_out dimensions must equal:
+ *
+ * (mat_1.rows * mat_2.rows) x (mat_1.cols * mat_2.cols)
+ */
+void tensor_prod(Matrix *mat_1, Matrix *mat_2, Matrix *mat_out) {
+    size_t rows = mat_out->rows;
+    size_t cols = mat_out->cols;
+
+    size_t rows_1 = mat_1->rows;
+    size_t cols_1 = mat_1->cols;
+
+    size_t rows_2 = mat_2->rows;
+    size_t cols_2 = mat_2->cols;
+
+    if (rows != rows_1 * rows_2 || cols != cols_1 * cols_2) {
+        raiseError("Incorrect shapes for operation tensor product");
+    }
+
+    for (size_t i = 0; i < rows_1; i++) {
+        for (size_t j = 0; j < cols_1; j++) {
+
+            double complex a = mat_1->data[i * cols_1 + j];
+
+            for (size_t k = 0; k < rows_2; k++) {
+                for (size_t l = 0; l < cols_2; l++) {
+
+                    size_t out_i = i * rows_2 + k;
+                    size_t out_j = j * cols_2 + l;
+
+                    mat_out->data[out_i * cols + out_j] = a * mat_2->data[k * cols_2 + l];
+                }
+            }
+        }
+    }
+}
+
+/*
  * Multiply matrix <mat> by scalar <a>
  */
 void mul_matrix_scalar(Matrix *mat, complex double a) {
@@ -336,7 +374,7 @@ void div_matrix_scalar(Matrix *mat, complex double a) {
 }
 
 int main(int argc, char *argv[]) {
-    const char *operations = "add, sub, mul";
+    const char *operations = "add, sub, mul, kron/tensor";
 
     if (argc < 4) {
         raiseError("Usage: %s <filename_1> <filename_2> <operation>\nValid operations: %s\n", argv[0], operations);
@@ -382,12 +420,20 @@ int main(int argc, char *argv[]) {
         mul_matrix(&mat_1, &mat_2, &mat_out);
         show(&mat_out);
 
+    } else if (strcmp(argv[3], "kron") == 0 || strcmp(argv[3], "tensor") == 0) {
+
+        printf("Tensor product\n");
+
+        mat_out = init_matrix(mat_1.rows * mat_2.rows, mat_1.cols * mat_2.cols, 0);
+
+        tensor_prod(&mat_1, &mat_2, &mat_out);
+        show(&mat_out);
     } else {
         raiseError("Valid operations: %s", operations);
     }
 
-    div_matrix_scalar(&mat_out, 0);
-    show(&mat_out);
+//    div_matrix_scalar(&mat_out, 0);
+//    show(&mat_out);
 
     free(mat_1.data);
     free(mat_2.data);
