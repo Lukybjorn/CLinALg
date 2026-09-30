@@ -59,8 +59,7 @@ Matrix init_matrix(size_t rows, size_t cols, complex double fill) {
  * endptr is set to the first character that was not
  * part of the complex number.
  */
-double complex strtocd(const char *str, char **endptr)
-{
+double complex strtocd(const char *str, char **endptr) {
     double real = 0.0;
     double imag = 0.0;
 
