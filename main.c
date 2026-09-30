@@ -482,5 +482,7 @@ int main(int argc, char *argv[]) {
     free(mat_2.data);
     free(mat_out.data);
 
+    //TEST
+
     return 0;
 }
