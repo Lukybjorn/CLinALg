@@ -481,7 +481,9 @@ int main(int argc, char *argv[]) {
     free(mat_2.data);
     free(mat_out.data);
 
-    //TEST
+    if (1 == 0) {
+        printf("What? 1 = 0????");
+    }
 
     return 0;
 }
