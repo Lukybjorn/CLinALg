@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 // Print the error messege in the <fmt> specified and exit the program with EXIT_FALIURE
 #define raiseError(fmt, ...) do { \
     fprintf(stderr, "ERROR[%d:%s()] ", __LINE__, __func__); \
@@ -336,9 +337,7 @@ void mul_matrix(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
 
 /*
  * Tensor product between two matrices.
- *
  * mat_out dimensions must equal:
- *
  * (mat_1.rows * mat_2.rows) x (mat_1.cols * mat_2.cols)
  */
 void tensor_prod(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
@@ -372,6 +371,7 @@ void tensor_prod(const Matrix *mat_1, const Matrix *mat_2, Matrix *mat_out) {
         }
     }
 }
+
 
 complex double trace(const Matrix *mat) {
     size_t rows = mat->rows;
